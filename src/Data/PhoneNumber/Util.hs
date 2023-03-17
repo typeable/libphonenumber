@@ -29,7 +29,7 @@ module Data.PhoneNumber.Util
   , supportedTypesForNonGeoEntity
     -- * 'Region'/'CountryCode' Queries
   , Region(..)
-  , noRegion
+  , NonGeoRegion(..)
   , CountryCode(..)
   , countryCodeForRegion
   , regionForCountryCode
@@ -59,19 +59,31 @@ import GHC.Generics
 import GHC.Exts
 import GHC.IO
 
--- | Most of the time an ISO 3166-1 alpha-2 country code in upper case, except
--- in some cases the UN M.49 code @"001"@ (meaning the world) used to represent
--- non-geographical entities.
---
--- In some situations, the 'noRegion' value corresponds to a default or
--- unspecified region.
+-- | An ISO 3166-1 alpha-2 country code in upper case.
 newtype Region = Region ByteString
   deriving newtype (Eq, Ord, Show, Read, IsString, NFData)
   deriving stock (Data, Generic)
 
--- | A default or unspecified region, the user-assigned alpha-2 code @\"ZZ\"@
-noRegion :: Region
-noRegion = "ZZ"
+-- | A "region" corresponding to non-geographical entities. The library
+-- internally uses the UN M.49 code @"001"@ (meaning the world) for this.
+data NonGeoRegion = Region001
+  deriving stock (Eq, Ord, Show, Read, Data, Generic)
+  deriving anyclass (NFData)
+
+filter001 :: ByteString -> Either NonGeoRegion Region
+filter001 region
+  | region == "001" = Left Region001
+  | otherwise = Right $ Region region
+
+filter001ZZ :: ByteString -> Maybe (Either NonGeoRegion Region)
+filter001ZZ region
+  | region == "ZZ" = Nothing
+  | region == "001" = Just $ Left Region001
+  | otherwise = Just $ Right $ Region region
+
+filter0 :: Int -> Maybe CountryCode
+filter0 0 = Nothing
+filter0 cc = Just $ CountryCode cc
 
 -- | All geographical regions the library has metadata for
 supportedRegions :: S.Set Region
@@ -81,8 +93,8 @@ supportedRegions = S.fromList $ unsafeDupablePerformIO $ mask_ $
 -- | All global network calling codes (country calling codes for
 -- non-geographical entities) the library has metadata for
 supportedGlobalNetworkCallingCodes :: S.Set CountryCode
-supportedGlobalNetworkCallingCodes = S.fromList $ unsafeDupablePerformIO $ mask_ $
-  map (CountryCode . fromIntegral) <$>
+supportedGlobalNetworkCallingCodes = S.fromList $ map (CountryCode . fromIntegral) $
+  unsafeDupablePerformIO $ mask_ $
     c_phone_number_util_get_supported_global_network_calling_codes
 
 -- | All country calling codes the library has metadata for, covering both
@@ -90,8 +102,8 @@ supportedGlobalNetworkCallingCodes = S.fromList $ unsafeDupablePerformIO $ mask_
 -- geographical entities. This could be used to populate a drop-down box of
 -- country calling codes for a phone-number widget, for instance.
 supportedCallingCodes :: S.Set CountryCode
-supportedCallingCodes = S.fromList $ unsafeDupablePerformIO $ mask_ $
-  map (CountryCode . fromIntegral) <$>
+supportedCallingCodes = S.fromList $ map (CountryCode . fromIntegral) $
+  unsafeDupablePerformIO $ mask_ $
     c_phone_number_util_get_supported_calling_codes
 
 -- | Returns the types for a given region which the library has metadata for.
@@ -101,8 +113,9 @@ supportedCallingCodes = S.fromList $ unsafeDupablePerformIO $ mask_ $
 --
 -- No types will be returned for invalid or unknown region codes.
 supportedTypesForRegion :: Region -> S.Set PhoneNumberType
-supportedTypesForRegion (Region region) = S.fromList $ unsafeDupablePerformIO $ mask_ $
-  c_phone_number_util_get_supported_types_for_region region
+supportedTypesForRegion (Region region) = S.fromList $
+  unsafeDupablePerformIO $ mask_ $
+    c_phone_number_util_get_supported_types_for_region region
 
 -- | Returns the types for a country-code belonging to a non-geographical entity
 -- which the library has metadata for. Will not include 'FixedLineOrMobile' (if
@@ -113,8 +126,9 @@ supportedTypesForRegion (Region region) = S.fromList $ unsafeDupablePerformIO $ 
 -- No types will be returned for country calling codes that do not map to a
 -- known non-geographical entity.
 supportedTypesForNonGeoEntity :: CountryCode -> S.Set PhoneNumberType
-supportedTypesForNonGeoEntity (CountryCode cc) = S.fromList $ unsafeDupablePerformIO $ mask_ $
-  c_phone_number_util_get_supported_types_for_non_geo_entity $ fromIntegral cc
+supportedTypesForNonGeoEntity (CountryCode cc) = S.fromList $
+  unsafeDupablePerformIO $ mask_ $
+    c_phone_number_util_get_supported_types_for_non_geo_entity $ fromIntegral cc
 
 -- | Returns true if the number is a valid vanity (alpha) number such as
 -- @"800 MICROSOFT"@. A valid vanity number will start with at least 3 digits
@@ -275,24 +289,27 @@ numberType pn = unsafeDupablePerformIO $
 -- @+41 (0) 78 927 2696@ can be parsed into a number with country code @"41"@
 -- and National Significant Number @"789272696"@. This is valid, while the
 -- original string is not dialable.
-isValidNumber :: Maybe Region -> PhoneNumber -> Bool
+isValidNumber :: Maybe (Either NonGeoRegion Region) -> PhoneNumber -> Bool
 isValidNumber Nothing pn = unsafeDupablePerformIO $
   c_phone_number_util_is_valid_number pn
-isValidNumber (Just (Region region)) pn = unsafeDupablePerformIO $
+isValidNumber (Just (Left Region001)) pn = unsafeDupablePerformIO $
+  c_phone_number_util_is_valid_number_for_region pn "001"
+isValidNumber (Just (Right (Region region))) pn = unsafeDupablePerformIO $
   c_phone_number_util_is_valid_number_for_region pn region
 
 -- | Returns the region where a phone number is from. This could be used for
 -- geocoding at the region level. Only guarantees correct results for valid,
 -- full numbers (not short-codes, or invalid numbers).
-regionForNumber :: PhoneNumber -> Region
-regionForNumber pn = unsafeDupablePerformIO $ mask_ $
-  coerce $ c_phone_number_util_get_region_code_for_number pn
+regionForNumber :: PhoneNumber -> Maybe (Either NonGeoRegion Region)
+regionForNumber pn = filter001ZZ $
+  unsafeDupablePerformIO $ mask_ $
+    c_phone_number_util_get_region_code_for_number pn
 
 -- | Returns the country calling code for a specific region. For example, this
 -- would be @1@ for the United States, and @64@ for New Zealand.
-countryCodeForRegion :: Region -> CountryCode
-countryCodeForRegion (Region region) = unsafeDupablePerformIO $
-  CountryCode . fromIntegral <$>
+countryCodeForRegion :: Region -> Maybe CountryCode
+countryCodeForRegion (Region region) = filter0 $ fromIntegral $
+  unsafeDupablePerformIO $
     c_phone_number_util_get_country_code_for_region region
 
 -- | Returns the region code that matches the specific country code. Note that
@@ -300,18 +317,19 @@ countryCodeForRegion (Region region) = unsafeDupablePerformIO $
 -- (e.g. US and Canada), and in that case, only one of the regions (normally the
 -- one with the largest population) is returned. If the country calling code
 -- entered is valid but doesn't match a specific region (such as in the case of
--- non-geographical calling codes like @800@) the @'Region' "001"@ will be
--- returned.
-regionForCountryCode :: CountryCode -> Region
-regionForCountryCode (CountryCode cc) = unsafeDupablePerformIO $ mask_ $
-  coerce $ c_phone_number_util_get_region_code_for_country_code $ fromIntegral cc
+-- non-geographical calling codes like @800@) @'Region001'@ will be returned.
+regionForCountryCode :: CountryCode -> Maybe (Either NonGeoRegion Region)
+regionForCountryCode (CountryCode cc) = filter001ZZ $
+  unsafeDupablePerformIO $ mask_ $
+    c_phone_number_util_get_region_code_for_country_code $ fromIntegral cc
 
 -- | Returns a list of the region codes that match the specific country calling
--- code. For non-geographical country calling codes, the region code @"001"@ is
--- returned. Also, in the case of no region code being found, the list is empty.
-regionsForCountryCode :: CountryCode -> [Region]
-regionsForCountryCode (CountryCode cc) = unsafeDupablePerformIO $ mask_ $
-  coerce $ c_phone_number_util_get_region_codes_for_country_calling_code $ fromIntegral cc
+-- code. For non-geographical country calling codes, 'Region001' is returned.
+-- Also, in the case of no region code being found, the list is empty.
+regionsForCountryCode :: CountryCode -> [Either NonGeoRegion Region]
+regionsForCountryCode (CountryCode cc) = map filter001 $
+  unsafeDupablePerformIO $ mask_ $
+    c_phone_number_util_get_region_codes_for_country_calling_code $ fromIntegral cc
 
 -- | Checks if this is a region under the North American Numbering Plan
 -- Administration (NANPA).
@@ -431,16 +449,16 @@ data ParseMode
 -- number is not in international format (does not start with @\'+\'@).
 parseNumber
   :: ParseMode
-  -> Region -- ^ Default region, the country that we are expecting the number to
-    -- be dialed from, which affects national and international dialing
-    -- prefixes. This is only used if the number being parsed is not written in
-    -- international format. In such cases the 'countryCode' of the number would
-    -- be that of the default region supplied. If the number is guaranteed to
-    -- start with a @\'+\'@ followed by the country calling code, then
-    -- 'noRegion' can be supplied.
+  -> Maybe Region -- ^ Default region, the country that we are expecting the
+    -- number to be dialed from, which affects national and international
+    -- dialing prefixes. This is only used if the number being parsed is not
+    -- written in international format. In such cases the 'countryCode' of the
+    -- number would be that of the default region supplied. If the number is
+    -- guaranteed to start with a @\'+\'@ followed by the country calling code,
+    -- then this can be omitted.
   -> ByteString -- ^ Input.
   -> Either ErrorType PhoneNumber
-parseNumber mode (Region region) number = case err of
+parseNumber mode mRegion number = case err of
   I.NoParsingError -> Right pn
   I.InvalidCountryCodeError -> Left InvalidCountryCodeError
   I.NotANumber -> Left NotANumber
@@ -448,6 +466,9 @@ parseNumber mode (Region region) number = case err of
   I.TooShortNsn -> Left TooShortNsn
   I.TooLongNsn -> Left TooLongNsn
   where
+    region = case mRegion of
+      Nothing -> "ZZ"
+      Just (Region reg) -> reg
     (err, pn) = case mode of
       Canonicalize -> unsafeDupablePerformIO $ mask_ $
         c_phone_number_util_parse number region

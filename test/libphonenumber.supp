@@ -1,0 +1,22 @@
+{
+   leaks during initialization
+   Memcheck:Leak
+   ...
+   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil11GetInstanceEv
+   ...
+}
+{
+   leaks during initialization
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_dl_init
+   ...
+}
+{
+   leaks due to cache
+   Memcheck:Leak
+   ...
+   fun:_ZN4i18n12phonenumbers11RegExpCache9GetRegExpERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE
+   ...
+}

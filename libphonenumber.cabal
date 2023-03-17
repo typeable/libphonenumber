@@ -1,0 +1,84 @@
+cabal-version:      3.0
+name:               libphonenumber
+version:            0.0.0.0
+category:           Data
+synopsis:           Parsing, formatting, and validating international phone
+                    numbers
+description:
+                    This package provides bindings for the C++ version of the
+                    <https://github.com/google/libphonenumber libphonenumber library>.
+                    The bindings currently do not include @AsYouTypeFormatter@
+                    and @ShortNumberInfo@.
+
+                    The interface largely resembles that of the original unified
+                    C++, Java, and JavaScript version of the library, with some
+                    minor changes to make the interface more Haskell-like.
+
+                    The provided functions are pure, under the assumption that
+                    we are the only user of the C++ library, i.e. that no one
+                    else has installed a global logger which could observe
+                    side-effects from library calls.
+
+build-type:         Simple
+
+extra-source-files:
+    include/*.h
+    test/libphonenumber.supp
+
+library
+    exposed-modules:
+        Data.PhoneNumber.Number
+        Data.PhoneNumber.Util
+    other-modules:
+        Data.PhoneNumber.Internal.Common
+        Data.PhoneNumber.Internal.Number
+        Data.PhoneNumber.Internal.Util
+    build-depends:
+          base >= 4.12 && < 4.18
+        , bytestring
+        , containers
+        , deepseq
+        , transformers
+    build-tool-depends: c2hs:c2hs
+    include-dirs: include
+    includes:
+        c_phonenumber.h
+        c_phonenumberutil.h
+    cxx-sources:
+        cxxbits/c_phonenumber.cpp
+        cxxbits/c_phonenumberutil.cpp
+    extra-libraries:
+        phonenumber
+        protobuf
+    if impl(ghc >= 9.4)
+        build-depends: system-cxx-std-lib
+    else
+        extra-libraries: stdc++
+    hs-source-dirs: src
+    default-language: Haskell2010
+    default-extensions:
+        DeriveAnyClass
+        DeriveDataTypeable
+        DeriveGeneric
+        DerivingStrategies
+        GeneralizedNewtypeDeriving
+        LambdaCase
+        NamedFieldPuns
+        OverloadedStrings
+        PatternSynonyms
+        StandaloneDeriving
+        RecordWildCards
+        ViewPatterns
+    if impl(ghc >= 9.2)
+        default-extensions: NoFieldSelectors
+    ghc-options: -Wall -Wextra -Werror
+
+test-suite leak_test
+    type: exitcode-stdio-1.0
+    build-depends:
+          base
+        , libphonenumber
+        , process
+    main-is: Leak.hs
+    hs-source-dirs: test
+    default-language: Haskell2010

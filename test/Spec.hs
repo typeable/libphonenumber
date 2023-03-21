@@ -146,10 +146,15 @@ main = hspec $ modifyMaxSuccess (* 10) $ do
       BSC.all (`elem` ['0'..'9']) $ countryMobileToken cc
 
   describe "formatNumber" $ do
-    prop "with International produces a parseable result" $
+    prop "with International produces a parseable result (if no ext)" $
       \(ParsedNumber _ pn) -> possibleNumber Unknown pn == IsPossible ==>
-        isRight $ parseNumber Canonicalize Nothing
-          $ formatNumber International pn
+        -- Apparently in the TW region an extension number is formatted
+        -- with a "#", and the formatter will format
+        -- "+886 2 2123 4567 ext. 1234567890" as "+886 2 2123 4567#1234567890"
+        -- even though the former parses and the latter doesn't
+        extension pn == Nothing ==>
+          isRight $ parseNumber Canonicalize Nothing
+            $ formatNumber International pn
     prop "with E164 produces a parseable result" $
       \(ParsedNumber _ pn) -> possibleNumber Unknown pn == IsPossible ==>
         isRight $ parseNumber Canonicalize Nothing

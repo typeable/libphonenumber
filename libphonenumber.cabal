@@ -24,6 +24,13 @@ description:
                     and to avoid a dependency on @text@, we use 'ByteString'
                     throughout the library instead of 'Data.Text.Text'.
 
+copyright:          2023 Typeable
+author:             Typeable
+maintainer:         mniip@typeable.io
+homepage:           https://github.com/typeable/libphonenumber/
+license:            MIT
+license-file:       LICENSE
+
 build-type:         Simple
 
 extra-source-files:

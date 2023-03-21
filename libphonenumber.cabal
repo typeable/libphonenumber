@@ -37,6 +37,10 @@ extra-source-files:
     include/*.h
     test/libphonenumber.supp
 
+source-repository head
+    type: git
+    location: https://github.com/typeable/libphonenumber/
+
 library
     exposed-modules:
         Data.PhoneNumber.Number
@@ -83,7 +87,7 @@ library
         ViewPatterns
     if impl(ghc >= 9.2)
         default-extensions: NoFieldSelectors
-    ghc-options: -Wall -Wextra -Werror
+    ghc-options: -Wall -Wextra
 
 test-suite spec_test
     type: exitcode-stdio-1.0

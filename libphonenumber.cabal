@@ -50,7 +50,7 @@ library
         Data.PhoneNumber.Internal.Number
         Data.PhoneNumber.Internal.Util
     build-depends:
-          base >= 4.12 && < 4.18
+          base >= 4.12 && < 4.19
         , bytestring
         , containers
         , deepseq

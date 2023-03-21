@@ -93,3 +93,6 @@ jobs:
       - name: Upload tarball to hackage
         run: |
           curl -X POST 'https://hackage.haskell.org/packages/candidates/' -H "Authorization: X-ApiKey ${{ secrets.HACKAGE_KEY }}" -F "package=@$dist" -w '%{url_effective}\n'
+      - name: Upload haddocks to hackage
+        run: |
+          curl -X PUT "https://hackage.haskell.org/package/$(basename ${docs%-docs.tar.gz})/candidate/docs" -H "Authorization: X-ApiKey ${{ secrets.HACKAGE_KEY }}" -H 'Content-type: application/x-tar' -H 'Content-encoding: gzip' --data-binary "@$docs"

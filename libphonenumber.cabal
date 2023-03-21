@@ -31,11 +31,20 @@ homepage:           https://github.com/typeable/libphonenumber/
 license:            MIT
 license-file:       LICENSE
 
-build-type:         Simple
+tested-with:
+    , GHC == 8.6.5
+    , GHC == 8.8.4
+    , GHC == 8.10.7
+    , GHC == 9.0.2
+    , GHC == 9.2.7
+    , GHC == 9.4.4
+    , GHC == 9.6.1
+
+build-type: Simple
 
 extra-source-files:
-    include/*.h
-    test/libphonenumber.supp
+    , include/*.h
+    , test/libphonenumber.supp
 
 source-repository head
     type: git
@@ -43,29 +52,29 @@ source-repository head
 
 library
     exposed-modules:
-        Data.PhoneNumber.Number
-        Data.PhoneNumber.Util
+        , Data.PhoneNumber.Number
+        , Data.PhoneNumber.Util
     other-modules:
-        Data.PhoneNumber.Internal.Common
-        Data.PhoneNumber.Internal.Number
-        Data.PhoneNumber.Internal.Util
+        , Data.PhoneNumber.Internal.Common
+        , Data.PhoneNumber.Internal.Number
+        , Data.PhoneNumber.Internal.Util
     build-depends:
-          base >= 4.12 && < 4.19
-        , bytestring
-        , containers
-        , deepseq
-        , transformers
+        , base >= 4.12 && < 4.19
+        , bytestring >= 0.10.8 && < 0.12
+        , containers >= 0.6.0 && < 0.7
+        , deepseq >= 1.4.4 && < 1.5
+        , transformers >= 0.5.5 && < 0.7
     build-tool-depends: c2hs:c2hs
     include-dirs: include
     includes:
-        c_phonenumber.h
-        c_phonenumberutil.h
+        , c_phonenumber.h
+        , c_phonenumberutil.h
     cxx-sources:
-        cxxbits/c_phonenumber.cpp
-        cxxbits/c_phonenumberutil.cpp
+        , cxxbits/c_phonenumber.cpp
+        , cxxbits/c_phonenumberutil.cpp
     extra-libraries:
-        phonenumber
-        protobuf
+        , phonenumber
+        , protobuf
     if impl(ghc >= 9.4)
         build-depends: system-cxx-std-lib
     else
@@ -73,18 +82,18 @@ library
     hs-source-dirs: src
     default-language: Haskell2010
     default-extensions:
-        DeriveAnyClass
-        DeriveDataTypeable
-        DeriveGeneric
-        DerivingStrategies
-        GeneralizedNewtypeDeriving
-        LambdaCase
-        NamedFieldPuns
-        OverloadedStrings
-        PatternSynonyms
-        StandaloneDeriving
-        RecordWildCards
-        ViewPatterns
+        , DeriveAnyClass
+        , DeriveDataTypeable
+        , DeriveGeneric
+        , DerivingStrategies
+        , GeneralizedNewtypeDeriving
+        , LambdaCase
+        , NamedFieldPuns
+        , OverloadedStrings
+        , PatternSynonyms
+        , StandaloneDeriving
+        , RecordWildCards
+        , ViewPatterns
     if impl(ghc >= 9.2)
         default-extensions: NoFieldSelectors
     ghc-options: -Wall -Wextra
@@ -92,12 +101,12 @@ library
 test-suite spec_test
     type: exitcode-stdio-1.0
     build-depends:
-          base
+        , base
         , bytestring
         , containers
-        , hspec
+        , hspec >= 2.10.8 && < 2.11
         , libphonenumber
-        , QuickCheck
+        , QuickCheck >= 2.13.1 && < 2.15
     main-is: Spec.hs
     hs-source-dirs: test
     default-language: Haskell2010
@@ -106,9 +115,9 @@ test-suite spec_test
 test-suite leak_test
     type: exitcode-stdio-1.0
     build-depends:
-          base
+        , base
         , libphonenumber
-        , process
+        , process >= 1.6.5 && < 1.7
     main-is: Leak.hs
     hs-source-dirs: test
     default-language: Haskell2010

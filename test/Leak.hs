@@ -74,7 +74,7 @@ main = do
     carrierCode = "10"
     nonGeoCode = 800
     phoneString = "+41 44 668 1800"
-    Right phoneNumber = parseNumber KeepRawInput noRegion phoneString
+    Right phoneNumber = parseNumber KeepRawInput Nothing phoneString
   hammer iter (\(PhoneNumber a b c d e f g h) -> PhoneNumber a b c d e f g h) phoneNumber
   hammer iter supportedTypesForRegion region
   hammer iter supportedTypesForNonGeoEntity nonGeoCode
@@ -96,7 +96,7 @@ main = do
   hammer iter (formatNumber (OutOfCountry region False)) phoneNumber
   hammer iter truncateTooLongNumber phoneNumber
   hammer iter numberType phoneNumber
-  hammer iter (isValidNumber (Just region)) phoneNumber
+  hammer iter (isValidNumber (Just (Right region))) phoneNumber
   hammer iter regionForNumber phoneNumber
   hammer iter countryCodeForRegion region
   hammer iter regionForCountryCode countryCallingCode
@@ -107,10 +107,10 @@ main = do
   hammer iter canBeInternationallyDialed phoneNumber
   hammer iter isGeographicalNumber phoneNumber
   hammer iter (isGeographicalNumberType FixedLine) countryCallingCode
-  hammer iter (parseNumber Canonicalize region) phoneString
-  hammer iter (parseNumber Canonicalize region) ""
-  hammer iter (parseNumber KeepRawInput region) phoneString
-  hammer iter (parseNumber KeepRawInput region) ""
+  hammer iter (parseNumber Canonicalize (Just region)) phoneString
+  hammer iter (parseNumber Canonicalize (Just region)) ""
+  hammer iter (parseNumber KeepRawInput (Just region)) phoneString
+  hammer iter (parseNumber KeepRawInput (Just region)) ""
   hammer iter (matchNumbers (Left phoneString)) (Left phoneString)
   hammer iter (matchNumbers (Left phoneString)) (Right phoneNumber)
   hammer iter (matchNumbers (Right phoneNumber)) (Left phoneString)

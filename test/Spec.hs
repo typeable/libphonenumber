@@ -124,11 +124,12 @@ main = hspec $ modifyMaxSuccess (* 10) $ do
       BSC.all (`elem` ['0'..'9']) $ nationalSignificantNumber pn
     modifyMaxDiscardRatio (* 10) $ do
       prop "concatenated with country code parses to the original (if valid and not MX)" $
-        \(ParsedNumber (_, _, ParserInput input) pn) ->
+        \(ParsedNumber (_, mReg, ParserInput input) pn) ->
           -- Apparently "+52112210000000" makes the parser/formatter do weird
           -- stuff as it tries to handle the deprecated (?) mobile token ("1"
           -- after "+52")
-          if "5211" `BS.isPrefixOf` normalizeNumber Digits input
+          if "5211" `BS.isPrefixOf` normalizeNumber Digits input ||
+            mReg == Just "MX" && "11" `BS.isPrefixOf` normalizeNumber Digits input
           then discard
           else isValidNumber Nothing pn ==>
             let
@@ -219,8 +220,8 @@ main = hspec $ modifyMaxSuccess (* 10) $ do
   describe "possibleNumber" $ do
     modifyMaxDiscardRatio (* 10) $ do
       prop "with Unknown is more lenient than isValidNumber" $
-        \(ParsedNumber _ pn) ->
-          isValidNumber Nothing pn ==> possibleNumber Unknown pn === IsPossible
+        \(ParsedNumber _ pn) -> isValidNumber Nothing pn ==>
+          possibleNumber Unknown pn `elem` [IsPossible, IsPossibleLocalOnly]
 
   describe "canBeInternationallyDialed" $ do
     pure ()

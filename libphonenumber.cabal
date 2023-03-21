@@ -19,6 +19,11 @@ description:
                     else has installed a global logger which could observe
                     side-effects from library calls.
 
+                    The underlying library internally uses UTF-8 encoded byte
+                    strings. To avoid decoding overhead where it is unnecessary,
+                    and to avoid a dependency on @text@, we use 'ByteString'
+                    throughout the library instead of 'Data.Text.Text'.
+
 build-type:         Simple
 
 extra-source-files:

@@ -445,7 +445,7 @@ data ParseMode
 -- 'isValidNumber'.
 --
 -- Returns an error if the string is not considered to be a viable phone number
--- (e.g. too few or too many digits) or if 'noRegion' was supplied and the
+-- (e.g. too few or too many digits) or if no 'Region' was supplied and the
 -- number is not in international format (does not start with @\'+\'@).
 parseNumber
   :: ParseMode

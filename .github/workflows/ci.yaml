@@ -34,7 +34,7 @@ jobs:
         with:
           ghc-version: ${{ matrix.ghc_version }}
           cabal-version: "3.10.1.0"
-      - name: install C++ library
+      - name: Install C++ library
         run: |
           sudo apt-get update
           sudo apt-get install -y libphonenumber-dev
@@ -48,7 +48,7 @@ jobs:
           echo "PKGDIR_libphonenumber=$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/libphonenumber-[0-9.]*')" >> "$GITHUB_ENV"
       - name: cabal configure
         run: cd "$PKGDIR_libphonenumber" && cabal configure --with-ghc=ghc-${{ matrix.ghc_version }}
-      - name: install dependencies
+      - name: Install dependencies
         run: cd "$PKGDIR_libphonenumber" && cabal build --dependencies-only --enable-tests --haddock-all
       - name: cabal build
         run: cd "$PKGDIR_libphonenumber" && cabal build --ghc-options=-Werror
@@ -69,10 +69,18 @@ jobs:
       - uses: haskell/actions/setup@v2
         with:
           cabal-version: "3.10.1.0"
+      - name: Install C++ library
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libphonenumber-dev
       - name: cabal sdist
         run: |
           cabal sdist --output-dir "$GITHUB_WORKSPACE/sdist"
           echo "dist=$(find "$GITHUB_WORKSPACE/sdist" -maxdepth 1 -type f -name '*.tar.gz')" >> "$GITHUB_ENV"
+      - name: cabal haddock
+        run: |
+          cabal haddock --builddir "$GITHUB_WORKSPACE/doc" --haddock-for-hackage --enable-doc
+          echo "docs=$(find "$GITHUB_WORKSPACE/doc" -maxdepth 1 -type f -name '*-docs.tar.gz')" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v2
         with:
           name: Source tarball
@@ -82,3 +90,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.dist }}
           tag: ${{ github.ref }}
+      - name: Upload tarball to hackage
+        run: |
+          curl -X POST 'https://hackage.haskell.org/packages/candidates/' -H "Authorization: X-ApiKey ${{ secrets.HACKAGE_KEY }}" -F "package=@$dist" -w '%{url_effective}\n'

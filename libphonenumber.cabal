@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               libphonenumber
-version:            0.0.0.0
+version:            0.1.0.0
 category:           Data
 synopsis:           Parsing, formatting, and validating international phone
                     numbers

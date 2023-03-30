@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstring>
 #include <type_traits>
+#include <utility>
 
 // Given `enum T { A, B, C }` and `enum S { X, Y, Z }`, we can use
 // `is_same_enum<enum_values<T, A, B, C>, enum_values<S, X, Y, Z>>::value`
@@ -31,7 +32,7 @@ struct is_same_enum: std::false_type
 
 template<typename T, T... TVals, typename S, S... SVals>
 struct is_same_enum<enum_values<T, TVals...>, enum_values<S, SVals...>>:
-	std::integral_constant<bool, std::is_same_v<
+	std::integral_constant<bool, std::is_same<
 		std::integer_sequence<
 			typename std::common_type<
 				typename std::underlying_type<T>::type,
@@ -46,7 +47,7 @@ struct is_same_enum<enum_values<T, TVals...>, enum_values<S, SVals...>>:
 			>::type,
 			SVals...
 		>
-	>>
+	>::value>
 {};
 
 inline void unmarshal_string_size(std::string const &string, char *&c_string, size_t &c_string_size)

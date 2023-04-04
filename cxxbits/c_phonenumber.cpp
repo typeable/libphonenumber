@@ -9,18 +9,6 @@ extern "C" {
 
 using i18n::phonenumbers::PhoneNumber;
 
-// libphonenumber versions < 8.6.0 do not define CountryCodeSource::UNSPECIFIED
-// The value PN_UNSPECIFIED contains CountryCodeSource::UNSPECIFIED if it is
-// defined, otherwise 0 (the value used in the newer versions).
-template<typename T, typename = void>
-struct check_UNSPECIFIED: std::integral_constant<T, static_cast<T>(0)>
-{};
-template<typename T>
-struct check_UNSPECIFIED<T, void_t<decltype(T::UNSPECIFIED)>>:
-	std::integral_constant<T, T::UNSPECIFIED>
-{};
-static constexpr auto PN_UNSPECIFIED = check_UNSPECIFIED<PhoneNumber::CountryCodeSource>::value;
-
 static PhoneNumber::CountryCodeSource marshal_country_code_source(country_code_source value)
 {
 	static_assert(is_same_enum<
@@ -32,7 +20,7 @@ static PhoneNumber::CountryCodeSource marshal_country_code_source(country_code_s
 				FROM_DEFAULT_COUNTRY
 			>,
 			enum_values<PhoneNumber::CountryCodeSource,
-				PN_UNSPECIFIED,
+				PhoneNumber::UNSPECIFIED,
 				PhoneNumber::FROM_NUMBER_WITH_PLUS_SIGN,
 				PhoneNumber::FROM_NUMBER_WITH_IDD,
 				PhoneNumber::FROM_NUMBER_WITHOUT_PLUS_SIGN,

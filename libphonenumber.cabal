@@ -8,7 +8,8 @@ description:
                     This package provides bindings for the C++ version of the
                     <https://github.com/google/libphonenumber libphonenumber library>.
                     The bindings currently do not include @AsYouTypeFormatter@
-                    and @ShortNumberInfo@.
+                    and @ShortNumberInfo@. The C++ library must be of version
+                    >= 8.7.0.
 
                     The interface largely resembles that of the original unified
                     C++, Java, and JavaScript version of the library, with some

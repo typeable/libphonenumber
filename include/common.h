@@ -50,13 +50,6 @@ struct is_same_enum<enum_values<T, TVals...>, enum_values<S, SVals...>>:
 	>::value>
 {};
 
-// std::void_t for compilers that don't have it
-template<typename T>
-struct make_void { using type = void; };
-
-template<typename T>
-using void_t = typename make_void<T>::type;
-
 inline void unmarshal_string_size(std::string const &string, char *&c_string, size_t &c_string_size)
 {
 	c_string_size = string.size();

@@ -371,12 +371,12 @@ nddPrefixForRegion strip (Region region) = unsafeDupablePerformIO $ mask_ $
 -- 3. For some numbers (particularly fixed-line), many regions have the concept
 -- of area code, which together with subscriber number constitute the National
 -- Significant Number. It is sometimes okay to dial only the subscriber number
--- when dialing in the same area. This function will return IsPossibleLocalOnly
--- if the subscriber-number-only version is passed in. On the other hand,
--- because 'isValidNumber' validates using information on both starting digits
--- (for fixed line numbers, that would most likely be area codes) and length
--- (obviously includes the length of area codes for fixed line numbers), it will
--- return 'False' for the subscriber-number-only version.
+-- when dialing in the same area. This function will return
+-- 'IsPossibleLocalOnly' if the subscriber-number-only version is passed in. On
+-- the other hand, because 'isValidNumber' validates using information on both
+-- starting digits (for fixed line numbers, that would most likely be area
+-- codes) and length (obviously includes the length of area codes for fixed line
+-- numbers), it will return 'False' for the subscriber-number-only version.
 possibleNumber :: PhoneNumberType -> PhoneNumber -> ValidationResult
 possibleNumber ntype pn = unsafeDupablePerformIO $
   c_phone_number_util_is_possible_number_for_type_with_reason pn ntype

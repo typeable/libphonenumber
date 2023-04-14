@@ -43,20 +43,16 @@ typedef struct
 	char has_number_of_leading_zeros;
 } phone_number;
 
-#ifdef __cplusplus
-typedef i18n::phonenumbers::PhoneNumber PhoneNumber;
-#else
-typedef struct PhoneNumber PhoneNumber;
-#endif
+struct CxxPhoneNumber;
 
 // The returned object is allocated by `new` and managed by C++ RAII, and it is
 // haskell's responsibility to call its finalizer (c_phone_number_free).
-PhoneNumber *c_phone_number_marshal(phone_number const *);
+struct CxxPhoneNumber *c_phone_number_marshal(phone_number const *);
 
 // phone_number * points to an area which will be filled with the data of the
 // given PhoneNumber.
-void c_phone_number_unmarshal(PhoneNumber const *, phone_number *);
+void c_phone_number_unmarshal(struct CxxPhoneNumber const *, phone_number *);
 
-void c_phone_number_free(PhoneNumber *);
+void c_phone_number_free(struct CxxPhoneNumber *);
 
 #endif

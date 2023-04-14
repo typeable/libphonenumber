@@ -55,7 +55,7 @@ static country_code_source unmarshal_country_code_source(PhoneNumber::CountryCod
 	return static_cast<country_code_source>(value);
 }
 
-extern "C" PhoneNumber *c_phone_number_marshal(phone_number const *c_number)
+extern "C" CxxPhoneNumber *c_phone_number_marshal(phone_number const *c_number)
 {
 	PhoneNumber *number = new PhoneNumber();
 	if (c_number->extension != nullptr)
@@ -72,11 +72,12 @@ extern "C" PhoneNumber *c_phone_number_marshal(phone_number const *c_number)
 		number->set_country_code_source(marshal_country_code_source(c_number->country_code_source));
 	if (c_number->has_number_of_leading_zeros)
 		number->set_number_of_leading_zeros(c_number->number_of_leading_zeros);
-	return number;
+	return reinterpret_cast<CxxPhoneNumber *>(number);
 }
 
-extern "C" void c_phone_number_unmarshal(PhoneNumber const *number, phone_number *c_number)
+extern "C" void c_phone_number_unmarshal(CxxPhoneNumber const *ptr, phone_number *c_number)
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	if (number->has_extension())
 		unmarshal_string_size(number->extension(), c_number->extension, c_number->extension_size);
 	else
@@ -99,7 +100,8 @@ extern "C" void c_phone_number_unmarshal(PhoneNumber const *number, phone_number
 		c_number->number_of_leading_zeros = number->number_of_leading_zeros();
 }
 
-extern "C" void c_phone_number_free(PhoneNumber *number)
+extern "C" void c_phone_number_free(CxxPhoneNumber *ptr)
 {
+	auto number = reinterpret_cast<PhoneNumber *>(ptr);
 	delete number;
 }

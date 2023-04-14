@@ -310,10 +310,11 @@ extern "C" void c_phone_number_util_normalize_dialable_chars_only(
 }
 
 extern "C" void c_phone_number_util_get_national_significant_number(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	c_string *c_nsn
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string nsn;
 	PhoneNumberUtil::GetInstance()->GetNationalSignificantNumber(*number, &nsn);
 	unmarshal_c_string(nsn, *c_nsn);
@@ -330,23 +331,25 @@ extern "C" void c_phone_number_util_get_country_mobile_token(
 }
 
 extern "C" void c_phone_number_util_format(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	phone_number_format format,
 	c_string *c_string
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string string;
 	PhoneNumberUtil::GetInstance()->Format(*number, marshal_phone_number_format(format), &string);
 	unmarshal_c_string(string, *c_string);
 }
 
 extern "C" void c_phone_number_util_format_national_number_with_carrier_code(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	char const *c_carrier_code,
 	size_t c_carrier_code_size,
 	c_string *c_string
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string const carrier_code(c_carrier_code, c_carrier_code_size);
 	std::string string;
 	PhoneNumberUtil::GetInstance()->FormatNationalNumberWithCarrierCode(*number, carrier_code, &string);
@@ -354,12 +357,13 @@ extern "C" void c_phone_number_util_format_national_number_with_carrier_code(
 }
 
 extern "C" void c_phone_number_util_format_national_number_with_preferred_carrier_code(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	char const *c_carrier_code,
 	size_t c_carrier_code_size,
 	c_string *c_string
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string const carrier_code(c_carrier_code, c_carrier_code_size);
 	std::string string;
 	PhoneNumberUtil::GetInstance()->FormatNationalNumberWithPreferredCarrierCode(*number, carrier_code, &string);
@@ -367,13 +371,14 @@ extern "C" void c_phone_number_util_format_national_number_with_preferred_carrie
 }
 
 extern "C" void c_phone_number_util_format_number_for_mobile_dialing(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	char const *c_region,
 	size_t c_region_size,
 	int with_formatting,
 	c_string *c_string
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string const region(c_region, c_region_size);
 	std::string string;
 	PhoneNumberUtil::GetInstance()->FormatNumberForMobileDialing(*number, region, with_formatting, &string);
@@ -381,12 +386,13 @@ extern "C" void c_phone_number_util_format_number_for_mobile_dialing(
 }
 
 extern "C" void c_phone_number_util_format_out_of_country_calling_number(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	char const *c_region,
 	size_t c_region_size,
 	c_string *c_string
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string const region(c_region, c_region_size);
 	std::string string;
 	PhoneNumberUtil::GetInstance()->FormatOutOfCountryCallingNumber(*number, region, &string);
@@ -394,12 +400,13 @@ extern "C" void c_phone_number_util_format_out_of_country_calling_number(
 }
 
 extern "C" void c_phone_number_util_format_in_original_format(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	char const *c_region,
 	size_t c_region_size,
 	c_string *c_string
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string const region(c_region, c_region_size);
 	std::string string;
 	PhoneNumberUtil::GetInstance()->FormatInOriginalFormat(*number, region, &string);
@@ -407,24 +414,26 @@ extern "C" void c_phone_number_util_format_in_original_format(
 }
 
 extern "C" void c_phone_number_util_format_out_of_country_keeping_alpha_chars(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	char const *c_region,
 	size_t c_region_size,
 	c_string *c_string
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string const region(c_region, c_region_size);
 	std::string string;
 	PhoneNumberUtil::GetInstance()->FormatOutOfCountryKeepingAlphaChars(*number, region, &string);
 	unmarshal_c_string(string, *c_string);
 }
 
-extern "C" PhoneNumber *c_phone_number_util_truncate_too_long_number(PhoneNumber const *input)
+extern "C" CxxPhoneNumber *c_phone_number_util_truncate_too_long_number(CxxPhoneNumber const *ptr)
 {
+	auto input = reinterpret_cast<PhoneNumber const *>(ptr);
 	auto *output = new PhoneNumber(*input);
 	if (PhoneNumberUtil::GetInstance()->TruncateTooLongNumber(output))
 	{
-		return output;
+		return reinterpret_cast<CxxPhoneNumber *>(output);
 	}
 	else
 	{
@@ -433,33 +442,37 @@ extern "C" PhoneNumber *c_phone_number_util_truncate_too_long_number(PhoneNumber
 	}
 }
 
-extern "C" phone_number_type c_phone_number_util_get_number_type(PhoneNumber const *number)
+extern "C" phone_number_type c_phone_number_util_get_number_type(CxxPhoneNumber const *ptr)
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	return unmarshal_phone_number_type(
 		PhoneNumberUtil::GetInstance()->GetNumberType(*number)
 	);
 }
 
-extern "C" int c_phone_number_util_is_valid_number(PhoneNumber const *number)
+extern "C" int c_phone_number_util_is_valid_number(CxxPhoneNumber const *ptr)
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	return PhoneNumberUtil::GetInstance()->IsValidNumber(*number);
 }
 
 extern "C" int c_phone_number_util_is_valid_number_for_region(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	char const *c_region,
 	size_t c_region_size
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string const region(c_region, c_region_size);
 	return PhoneNumberUtil::GetInstance()->IsValidNumberForRegion(*number, region);
 }
 
 extern "C" void c_phone_number_util_get_region_code_for_number(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	c_string *c_region
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	std::string region;
 	PhoneNumberUtil::GetInstance()->GetRegionCodeForNumber(*number, &region);
 	unmarshal_c_string(region, *c_region);
@@ -518,10 +531,11 @@ extern "C" void c_phone_number_util_get_ndd_prefix_for_region(
 }
 
 extern "C" validation_result c_phone_number_util_is_possible_number_for_type_with_reason(
-	PhoneNumber const *number,
+	CxxPhoneNumber const *ptr,
 	phone_number_type ntype
 )
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	return unmarshal_validation_result(
 		PhoneNumberUtil::GetInstance()->IsPossibleNumberForTypeWithReason(
 			*number,
@@ -530,13 +544,15 @@ extern "C" validation_result c_phone_number_util_is_possible_number_for_type_wit
 	);
 }
 
-extern "C" int c_phone_number_util_can_be_internationally_dialed(PhoneNumber const *number)
+extern "C" int c_phone_number_util_can_be_internationally_dialed(CxxPhoneNumber const *ptr)
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	return PhoneNumberUtil::GetInstance()->CanBeInternationallyDialled(*number);
 }
 
-extern "C" int c_phone_number_util_is_number_geographical_1(PhoneNumber const *number)
+extern "C" int c_phone_number_util_is_number_geographical_1(CxxPhoneNumber const *ptr)
 {
+	auto number = reinterpret_cast<PhoneNumber const *>(ptr);
 	return PhoneNumberUtil::GetInstance()->IsNumberGeographical(*number);
 }
 
@@ -556,14 +572,14 @@ extern "C" error_type c_phone_number_util_parse(
 	size_t c_string_size,
 	char const *c_region,
 	size_t c_region_size,
-	PhoneNumber **number
+	CxxPhoneNumber **number
 )
 {
 	std::string const string(c_string, c_string_size);
 	std::string const region(c_region, c_region_size);
-	*number = new PhoneNumber();
+	*number = reinterpret_cast<CxxPhoneNumber *>(new PhoneNumber());
 	return unmarshal_error_type(
-		PhoneNumberUtil::GetInstance()->Parse(string, region, *number)
+		PhoneNumberUtil::GetInstance()->Parse(string, region, reinterpret_cast<PhoneNumber *>(*number))
 	);
 }
 
@@ -572,22 +588,24 @@ extern "C" error_type c_phone_number_util_parse_and_keep_raw_input(
 	size_t c_string_size,
 	char const *c_region,
 	size_t c_region_size,
-	PhoneNumber **number
+	CxxPhoneNumber **number
 )
 {
 	std::string const string(c_string, c_string_size);
 	std::string const region(c_region, c_region_size);
-	*number = new PhoneNumber();
+	*number = reinterpret_cast<CxxPhoneNumber *>(new PhoneNumber());
 	return unmarshal_error_type(
-		PhoneNumberUtil::GetInstance()->ParseAndKeepRawInput(string, region, *number)
+		PhoneNumberUtil::GetInstance()->ParseAndKeepRawInput(string, region, reinterpret_cast<PhoneNumber *>(*number))
 	);
 }
 
 extern "C" match_type c_phone_number_util_is_number_match(
-	PhoneNumber const *number1,
-	PhoneNumber const *number2
+	CxxPhoneNumber const *ptr1,
+	CxxPhoneNumber const *ptr2
 )
 {
+	auto number1 = reinterpret_cast<PhoneNumber const *>(ptr1);
+	auto number2 = reinterpret_cast<PhoneNumber const *>(ptr2);
 	return unmarshal_match_type(
 		PhoneNumberUtil::GetInstance()->IsNumberMatch(*number1, *number2)
 	);
@@ -608,11 +626,12 @@ extern "C" match_type c_phone_number_util_is_number_match_with_two_strings(
 }
 
 extern "C" match_type c_phone_number_util_is_number_match_with_one_string(
-	PhoneNumber const *number1,
+	CxxPhoneNumber const *ptr1,
 	char const *c_number2,
 	size_t c_number2_size
 )
 {
+	auto number1 = reinterpret_cast<PhoneNumber const *>(ptr1);
 	std::string const number2(c_number2, c_number2_size);
 	return unmarshal_match_type(
 		PhoneNumberUtil::GetInstance()->IsNumberMatchWithOneString(*number1, number2)

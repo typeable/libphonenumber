@@ -126,7 +126,7 @@ acquireCPhoneNumber p = do
 -- , 'Data.PhoneNumber.Number.numberOfLeadingZeros' :: !('Maybe' 'Int')
 -- }
 -- @
-{#pointer *PhoneNumber foreign finalizer c_phone_number_free newtype#}
+{#pointer *CxxPhoneNumber as PhoneNumber foreign finalizer c_phone_number_free newtype#}
 
 {#fun unsafe c_phone_number_marshal
   { withCPhoneNumber* `CPhoneNumber'

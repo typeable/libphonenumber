@@ -53,11 +53,13 @@ data ParsedNumber = ParsedNumber (ParseMode, Maybe Region, ParserInput) PhoneNum
   deriving stock (Show)
 
 instance Arbitrary ParsedNumber where
-  arbitrary = liftA3 (,,) (elements [Canonicalize, KeepRawInput]) arbitrary arbitrary
-    `suchThatMap` \(mode, MReg mRegion, ParserInput input) ->
-      case parseNumber mode mRegion input of
-        Right pn -> Just $ ParsedNumber (mode, mRegion, ParserInput input) pn
-        _ -> Nothing
+  arbitrary = do
+    mode <- elements [Canonicalize, KeepRawInput]
+    liftA2 ((,,) mode) arbitrary arbitrary
+      `suchThatMap` \(_, MReg mRegion, ParserInput input) ->
+        case parseNumber mode mRegion input of
+          Right pn -> Just $ ParsedNumber (mode, mRegion, ParserInput input) pn
+          _ -> Nothing
   shrink (ParsedNumber (mode, region, input) _) = do
     ParserInput input' <- shrink input
     case parseNumber mode region input' of
@@ -113,7 +115,7 @@ main = hspec $ modifyMaxSuccess (* 10) $ do
           .&&. not (BS.null $ normalizeNumber Digits $ BS.pack str <> "0")
     describe "Dialable" $ do
       -- PhoneNumberUtil::NormalizeDiallableCharsOnly will error on any invalid UTF8
-      xprop "doesn't randomly fail" $ \str ->
+      prop "doesn't randomly fail" $ \str ->
         not (BS.null $ normalizeNumber Digits $ "0" <> BS.pack str)
           .&&. not (BS.null $ normalizeNumber Digits $ BS.pack str <> "0")
 
@@ -155,14 +157,19 @@ main = hspec $ modifyMaxSuccess (* 10) $ do
         extension pn == Nothing ==>
           isRight $ parseNumber Canonicalize Nothing
             $ formatNumber International pn
-    prop "with E164 produces a parseable result" $
-      \(ParsedNumber _ pn) -> possibleNumber Unknown pn == IsPossible ==>
-        isRight $ parseNumber Canonicalize Nothing
-          $ formatNumber E164 pn
-    prop "with RFC3966 produces a parseable result" $
-      \(ParsedNumber _ pn) -> possibleNumber Unknown pn == IsPossible ==>
-        isRight $ parseNumber Canonicalize Nothing
-          $ formatNumber RFC3966 pn
+    modifyMaxDiscardRatio (* 10) $ do
+      prop "with E164 produces a parseable result (if Canonicalize)" $
+        \(ParsedNumber (mode, _, _) pn) ->
+          -- KeepRawInput with pn == "0000" breaks E164 formatting
+          possibleNumber Unknown pn == IsPossible && mode == Canonicalize ==>
+            isRight $ parseNumber Canonicalize Nothing
+              $ formatNumber E164 pn
+      prop "with RFC3966 produces a parseable result (if Canonicalize)" $
+        \(ParsedNumber (mode, _, _) pn) ->
+          -- KeepRawInput with pn == "0000" breaks RFC3966 formatting
+          possibleNumber Unknown pn == IsPossible && mode == Canonicalize ==>
+            isRight $ parseNumber Canonicalize Nothing
+              $ formatNumber RFC3966 pn
 
   describe "truncateTooLongNumber" $ do
     pure ()

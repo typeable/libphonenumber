@@ -21,16 +21,10 @@ module Data.PhoneNumber.Number
   ) where
 
 import Data.ByteString (ByteString)
-import Data.PhoneNumber.Internal.Number hiding
-  ( pattern PhoneNumber
-  , extension
-  , rawInput
-  , preferredDomesticCarrierCode
-  , nationalNumber
-  , countryCode
-  , italianLeadingZero
-  , countryCodeSource
-  , numberOfLeadingZeros )
+import Data.PhoneNumber.Internal.Number
+  ( CPhoneNumber(CPhoneNumber), PhoneNumber, CountryCodeSource, toCPhoneNumber
+  , fromCPhoneNumber
+  )
 import qualified Data.PhoneNumber.Internal.Number as I
 
 -- | A country calling code (International Subscriber Dialing code, ISD code),

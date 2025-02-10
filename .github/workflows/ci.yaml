@@ -24,8 +24,10 @@ jobs:
           - "9.0.2"
           - "9.2.8"
           - "9.4.8"
-          - "9.6.3"
-          - "9.8.1"
+          - "9.6.6"
+          - "9.8.4"
+          - "9.10.1"
+          - "9.12.1"
       fail-fast: false
     name: Build on Linux, GHC ${{ matrix.ghc_version }}
     runs-on: ${{ matrix.platform }}

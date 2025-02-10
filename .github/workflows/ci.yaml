@@ -32,8 +32,8 @@ jobs:
     name: Build on Linux, GHC ${{ matrix.ghc_version }}
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: haskell/actions/setup@v2
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/setup@v2
         with:
           ghc-version: ${{ matrix.ghc_version }}
           cabal-version: "3.10.1.0"
@@ -69,7 +69,7 @@ jobs:
     if: github.event_name == 'release'
     steps:
       - uses: actions/checkout@v3
-      - uses: haskell/actions/setup@v2
+      - uses: haskell-actions/setup@v2
         with:
           cabal-version: "3.10.1.0"
       - name: Install C++ library

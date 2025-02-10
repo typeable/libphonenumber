@@ -125,15 +125,9 @@ main = hspec $ modifyMaxSuccess (* 10) $ do
     prop "returns only ASCII digits" $ \(ParsedNumber _ pn) ->
       BSC.all (`elem` ['0'..'9']) $ nationalSignificantNumber pn
     modifyMaxDiscardRatio (* 10) $ do
-      prop "concatenated with country code parses to the original (if valid and not MX)" $
-        \(ParsedNumber (_, mReg, ParserInput input) pn) ->
-          -- Apparently "+52112210000000" makes the parser/formatter do weird
-          -- stuff as it tries to handle the deprecated (?) mobile token ("1"
-          -- after "+52")
-          if "5211" `BS.isPrefixOf` normalizeNumber Digits input ||
-            mReg == Just "MX" && "11" `BS.isPrefixOf` normalizeNumber Digits input
-          then discard
-          else isValidNumber Nothing pn ==>
+      prop "concatenated with country code parses to the original (if valid)" $
+        \(ParsedNumber _ pn) ->
+          isValidNumber Nothing pn ==>
             let
               cc = countryCode pn
               nsn = nationalSignificantNumber pn

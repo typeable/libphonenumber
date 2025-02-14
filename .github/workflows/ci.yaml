@@ -16,7 +16,8 @@ jobs:
     strategy:
       matrix:
         platform:
-          - ubuntu-latest
+          # - ubuntu-latest
+          - macos-latest
         ghc_version:
           - "8.6.5"
           - "8.8.4"
@@ -28,8 +29,13 @@ jobs:
           - "9.8.4"
           - "9.10.1"
           - "9.12.1"
+        exclude:
+          - platform: macos-latest
+            ghc_version: "8.6.5"
+          - platform: macos-latest
+            ghc_version: "8.8.4"
       fail-fast: false
-    name: Build on Linux, GHC ${{ matrix.ghc_version }}
+    name: Build on ${{ matrix.platform }}, GHC ${{ matrix.ghc_version }}
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +45,15 @@ jobs:
           cabal-version: "3.10.1.0"
       - name: Install C++ library
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libphonenumber-dev
+          if [ "${{ matrix.platform }}" == "macos-latest" ]; then
+            brew install llvm@12
+            brew install libphonenumber
+            echo LDFLAGS=-L/opt/homebrew/opt/llvm/lib >> $GITHUB_ENV
+            echo CPPFLAGS=-I/opt/homebrew/opt/llvm/include >> $GITHUB_ENV
+          else
+            sudo apt-get update
+            sudo apt-get install -y libphonenumber-dev
+          fi
 
       - name: cabal sdist
         run: cabal sdist --output-dir "$GITHUB_WORKSPACE/sdist"

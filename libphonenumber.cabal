@@ -69,6 +69,7 @@ library
         , deepseq >= 1.4.4 && < 1.6
         , transformers >= 0.5.5 && < 0.7
     build-tool-depends: c2hs:c2hs
+    pkgconfig-depends: protobuf
     include-dirs: include
     includes:
         , c_phonenumber.h
@@ -78,7 +79,6 @@ library
         , cxxbits/c_phonenumberutil.cpp
     extra-libraries:
         , phonenumber
-        , protobuf
     if impl(ghc >= 9.4)
         build-depends: system-cxx-std-lib
     else

@@ -85,11 +85,11 @@ jobs:
         run: |
           cabal haddock --builddir "$GITHUB_WORKSPACE/doc" --haddock-for-hackage --enable-doc
           echo "docs=$(find "$GITHUB_WORKSPACE/doc" -maxdepth 1 -type f -name '*-docs.tar.gz')" >> "$GITHUB_ENV"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v6
         with:
           name: Source tarball
           path: ${{ env.dist }}
-      - uses: svenstaro/upload-release-action@2.2.1
+      - uses: svenstaro/upload-release-action@2.11.3
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.dist }}

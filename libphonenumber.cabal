@@ -39,10 +39,11 @@ tested-with:
     , GHC == 9.0.2
     , GHC == 9.2.8
     , GHC == 9.4.8
-    , GHC == 9.6.6
+    , GHC == 9.6.7
     , GHC == 9.8.4
-    , GHC == 9.10.1
-    , GHC == 9.12.1
+    , GHC == 9.10.3
+    , GHC == 9.12.2
+    , GHC == 9.14.1
 
 build-type: Simple
 
@@ -63,9 +64,9 @@ library
         , Data.PhoneNumber.Internal.Number
         , Data.PhoneNumber.Internal.Util
     build-depends:
-        , base >= 4.12 && < 4.22
+        , base >= 4.12 && < 4.23
         , bytestring >= 0.10.8 && < 0.13
-        , containers >= 0.6.0 && < 0.8
+        , containers >= 0.6.0 && < 0.9
         , deepseq >= 1.4.4 && < 1.6
         , transformers >= 0.5.5 && < 0.7
     build-tool-depends: c2hs:c2hs
